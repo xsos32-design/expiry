@@ -325,7 +325,7 @@ let lastStore=localStorage.getItem("sa_exp_store")||"";
 const remember=by=>{lastBy=by;localStorage.setItem("sa_exp_by",by)};
 
 /* ---------- storage：Google 試算表（Apps Script） ---------- */
-const API="__API__",KEY="sa-exp-2026",LSK="sa_exp_cache_v1";
+const API="https://script.google.com/macros/s/AKfycbxwsx9JJLaUBCJdC2WS5k9eKBrx1b5OHH1FhyA9XReiPYkMi2cek3Pvxswy2selR46l/exec",KEY="sa-exp-2026",LSK="sa_exp_cache_v1";
 const ONLINE=/^https:\/\/script\.google\.com\//.test(API);
 let ver=0,pver=0,queue=[],qp=null,syncing=false;
 function cache(){try{localStorage.setItem(LSK,JSON.stringify({lots,logs,photos,ver,pver}))}catch(e){try{localStorage.setItem(LSK,JSON.stringify({lots,logs,photos:{},ver,pver:0}))}catch(_){}}}
