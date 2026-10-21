@@ -313,6 +313,8 @@ header{position:sticky;top:0;z-index:10;background:var(--ground);padding-top:8px
 .prw .pdel{color:var(--r1);border-color:#4a1626;padding:0 10px}
 .prw .pdel[data-ok]{background:var(--r1);color:#2b0411}
 .padd{width:56px;height:44px;background:var(--gold);color:#241900;font-weight:900;font-size:20px;flex:none}
+.gst .gimg{grid-column:1/-1;display:block;width:100%;height:auto;margin-top:6px;border:1px solid var(--edge);background:var(--ground);cursor:zoom-in;min-height:120px}
+.lb{z-index:80}
 </style>
 </head>
 <body>
@@ -860,70 +862,61 @@ async function demo(){
 }
 async function undemo(){for(const l of lots.filter(x=>x.demo))await delLot(l.id);toast("示範資料已清除")}
 
-/* ---------- 新手教學 ---------- */
+/* ---------- 新手教學（實際畫面截圖） ---------- */
 const K=(t,c)=>`<span class="kb${c?" "+c:""}">${t}</span>`;
 const GUIDE=[
- {t:"開始之前",s:"先認識畫面，30 秒就好",f:[
-  ["右上角選「操作人」",`點 ${K("操作人？")} 選你自己（名單沒有你就按右上 ⚙ 設定新增）。選一次就會記住，之後快速按鍵、下架、申請都記在你名下。`],
-  ["看行事曆",`<span class="kb" style="background:var(--choc);color:#2a1406;border-color:var(--choc)">2</span> 巧克力到期、<span class="kb" style="background:var(--smoke);color:#06202f;border-color:var(--smoke)">2</span> 菸到期、<span class="kb" style="background:var(--gold);color:#241900;border-color:var(--gold)">2</span> 條碼申請截止，數字＝批數。點日期＝從那天起算。`],
-  ["看兩格待辦",`金色＝要申請屆期條碼、紅色＝該下架。點下去直接處理。`],
-  ["看清單",`左邊 07 巧克力、右邊 08 菸類，依「一個月內／一到兩個月／兩到三個月」分組。`,1]]},
+ {t:"開始之前",s:"先認識畫面，紅框就是要看、要按的地方",f:[
+  ["右上角選「操作人」",`點 ${K("操作人？")} 選你自己，選一次就會記住。名單沒有你就按旁邊 ${K("⚙")} 新增。`,0,"g01"],
+  ["看行事曆和兩格待辦",`行事曆上的小數字＝那天到期的批數（棕＝巧克力、藍＝菸、金＝條碼申請截止）。下面金色格＝要申請屆期條碼、紅色格＝該下架，點下去直接處理。`,0,"g02"],
+  ["下方 7 個功能鍵",`${K("登錄")}${K("條碼")}${K("下架")}${K("盤點")}${K("訊息")}${K("紀錄")}${K("匯出")}，點了會在功能列下方展開。`,0,"g03"],
+  ["看清單",`左 07 巧克力、右 08 菸類。每批下面有快速鍵：${K("−1","t")} 賣出、${K("條碼✓")} 已申請、${K("下架","r")}。點品名可以修改。`,1,"g12"]]},
  {t:"登錄效期",s:"新貨上架、發現短效期品時",f:[
-  ["按功能列「登錄」",K("＋ 登錄")],
-  ["選店別、大類",`${K("2140","t")}／${K("2153","r")}，${K("07 巧克力")} 或 ${K("08 菸類")}`],
-  {or:[["打品名挑商品檔","巧克力有 182 項，含圖、售價"],["點「最近登過」","常登的品項一點就帶入"]]},
-  ["效期直接打數字",`巧克力 ${K("261231")}、${K("31.12.2026")}；菸 ${K("2611")}。下方會顯示「剩幾天」確認。`],
-  ["打數量，按 Enter","＝存入，表單留著登下一批（店別、效期不用重選）"],
-  ["全部登完按「存入並關閉」",`同店同品項同效期已經有在庫時，會問你要不要${K("合併")}，不會重複一批。`,1]],
-  n:"<b>小技巧：</b>效期按 Enter 會跳到數量，數量按 Enter 直接存入，整排貨可以一路 Enter 登完。"},
- {t:"屆期條碼申請",s:"到期前 3、2、1 個月各申請一次",f:[
-  {or:[["點金色待辦","「X 批要申請屆期條碼」"],["按功能列「條碼」","看全部要申請的"]]},
-  ["勾選已經申請好的批次","依「進入 3／2／1 個月」分組，逾期的會標紅"],
-  ["選申請人","預設是右上角的操作人"],
-  ["按「確認已申請」","申請錯了在下方「最近已申請」按兩次復原",1]],
-  n:`<b>規則：</b>進入 3／2／1 個月的前一週要申請好。行事曆上的${K("金色數字")}就是申請截止日。<br><b>最快：</b>清單上直接按 ${K("條碼✓")}。`},
+  ["按功能列「登錄」","",0,"g03"],
+  ["選店別、大類",`${K("2140","t")} 或 ${K("2153","r")}；${K("07 巧克力")} 或 ${K("08 菸類")}`,0,"g04"],
+  ["打品名，從清單點選","巧克力打品名、品牌或品號都可以找；常登的也可以直接點下方「最近登過」。",0,"g05"],
+  ["效期直接打數字",`巧克力打 ${K("271231")} 或包裝上的 ${K("31.12.2027")}；菸打 ${K("2611")}。下面綠字會顯示換算後的日期和剩幾天，確認沒錯再往下。`,0,"g06"],
+  ["打數量，按「存入，登下一批」","數量欄按 Enter 也一樣是存入。",0,"g07"],
+  ["接著登下一批，全部登完按「存入並關閉」",`店別、效期會保留，下面列出這次登了哪些。同店同品項同效期已經有的，會問你要不要 ${K("合併")}。`,1,"g08"]]},
+ {t:"屆期條碼申請",s:"到期前 3、2、1 個月各申請一次，進入前一週要申請好",f:[
+  ["點金色待辦「批要申請屆期條碼」",`或按功能列 ${K("條碼")}。紅底「逾期」＝已經進入該月份還沒申請。`,0,"g09"],
+  ["勾選已經申請好的批次","依「進入 3／2／1 個月」分組，可以全選。",0,"g10"],
+  ["確認申請人，按「確認已申請」","申請人預設是右上角的操作人。按錯了在下方「最近已申請」按兩次復原。",1,"g11"],
+  ["（更快）清單上直接按「條碼✓」","一批一批處理時用這個，按完 6 秒內底部可以「復原」。",0,"g12"]]},
  {t:"下架",s:"巧克力距效期 40 天下架（GODIVA、神戶風月堂 30 天）",f:[
-  {or:[["點紅色待辦","「X 批該下架」"],["按功能列「下架」","可切「全部品項」"]]},
-  ["勾選要下架的批次","可以全選"],
-  ["選下架人",""],
-  ["按「確認下架」","下架錯了在「最近下架」按兩次復原",1]],
-  n:`<b>最快：</b>清單上紅色 ${K("下架","r")} 按一下變「確認下架」，再按一次才會下架，防止誤按。`},
+  ["點紅色待辦「批該下架」",`或按功能列 ${K("下架")}，可以切「全部品項」手動下架。`,0,"g02"],
+  ["勾選、選下架人，按「確認下架」","下架錯了在下方「最近下架」按兩次復原。",1,"g13"],
+  ["（更快）清單上紅色「下架」",`按一下變「確認下架」，再按一次才會下架，防止誤按。`,0,"g14"]]},
  {t:"每日回報（群組訊息）",s:"每天貼到群組的屆期回報",f:[
-  ["按功能列「訊息」",`選 ${K("每日回報")}`],
-  ["選店別、類別、範圍","兩店／2140／2153、香煙／巧克力、一～三個月內"],
-  ["今天賣掉幾個就按 −","數量跟訊息一起扣，扣到 0 就不會出現"],
-  ["按「存數量並複製」","數量寫回系統，訊息已複製"],
-  ["貼到群組","",1]],
-  n:`同一頁切到 ${K("條碼申請提醒")} 可以產生「本週要申請條碼」的群組訊息。`},
+  ["按「訊息」，選每日回報和範圍","上到下：每日回報／條碼申請提醒、店別、香煙或巧克力、一～三個月內。",0,"g15"],
+  ["今天賣掉幾個就按 −","數量和訊息一起扣，旁邊紅字顯示扣了幾個；扣到 0 就不會出現在回報。",0,"g16"],
+  ["確認預覽，按「存數量並複製」","數量寫回系統、訊息已複製，直接貼到群組。預覽內容也可以先手動改。",1,"g17"]]},
  {t:"賣出、修改、刪除",s:"平常維護效期資料",f:[
-  ["賣掉一個",`清單上按 ${K("−1","t")}，6 秒內底部可按「復原」`],
-  ["要改資料就點品名","打開這批的詳細視窗"],
-  ["改數量、效期、售價、折扣","效期一樣可以直接打數字，打錯的效期在這裡改"],
-  ["按「存修改」","每次修改都會記在「紀錄」",1]],
-  n:`<b>刪除：</b>詳細視窗最下面 ${K("刪除這批","r")} 按兩次才會刪，刪完 6 秒內可「復原」。<br><b>同品項再進一批：</b>詳細視窗按「同品項再登一批」。`},
+  ["賣掉一個：按「−1」",`數量直接扣 1，底部出現提示，6 秒內按 ${K("復原")} 可以撤回。`,0,"g18"],
+  ["要修改：點品名，改完按「存修改」",`可以改店別、效期、數量、售價、折扣。效期一樣直接打數字。最下面 ${K("刪除這批","r")} 要按兩次，刪完也能復原。`,1,"g19"]]},
  {t:"盤點",s:"定期核對帳上數量",f:[
-  ["按功能列「盤點」","清單每一批都會多一個數量格"],
-  ["輸入實際點到的數量","有改的格子會變黃"],
-  ["選盤點人",""],
-  ["按「存盤點」","差異會寫進紀錄，帳實相符也會記一筆",1]],
-  n:`盤點完可以到 ${K("紀錄")} 看所有異動，或用 ${K("匯出")} 產出 Excel 可開的 CSV。`}
+  ["按「盤點」，每批會多一個數量格","輸入實際點到的數量，有改的會變黃，旁邊顯示帳上數量。",0,"g20"],
+  ["確認盤點人，按「存盤點」","差異會寫進「紀錄」；帳實相符也會記一筆。",1,"g21"]]},
+ {t:"設定人員名單",s:"右上角 ⚙，所有人共用",f:[
+  ["按 ⚙，新增、排序、刪除人名",`打名字按 ${K("＋")} 新增；↑↓ 調順序，常用的放前面；刪除要按兩次。這份名單會出現在操作人和所有「○○人」的下拉選單。`,1,"g22"]]}
 ];
 let gi=0;
-function gStep(x,n){const[a,b,end]=x;return `<div class="gst${end?" end":""}"><i>${end?"✓":n}</i><span><b>${a}</b>${b?`<small>${b}</small>`:""}</span></div>`}
+const GIMG=n=>"g"+n.slice(1)+".jpg";
+function gStep(x,n){const[a,b,end,img]=x;return `<div class="gst${end?" end":""}"><i>${end?"✓":n}</i><span><b>${a}</b>${b?`<small>${b}</small>`:""}</span>${img?`<img class="gimg" src="${GIMG(img)}" alt="${esc(a)} 畫面" loading="lazy" data-gz="${GIMG(img)}" data-gt="${esc(a)}">`:""}</div>`}
 function renderGuide(){
-  const g=GUIDE[gi];let n=0;
-  const flow=g.f.map((x,i)=>{const arr=i?`<div class="garr">▼</div>`:"";if(x.or){n++;return arr+`<div class="gor">${gStep([x.or[0][0],x.or[0][1]],n).replace(/<i>.*?<\/i>/,"")}<span>或</span>${gStep([x.or[1][0],x.or[1][1]],n).replace(/<i>.*?<\/i>/,"")}</div>`}n++;return arr+gStep(x,n)}).join("");
+  const g=GUIDE[gi];
+  const flow=g.f.map((x,i)=>(i?`<div class="garr">▼</div>`:"")+gStep(x,i+1)).join("");
   $("#guide").innerHTML=`<div class="ghd"><b>新手教學 <em>${gi+1}/${GUIDE.length}</em></b><button id="gskip">略過</button></div>
   <div class="gtabs" id="gtabs">${GUIDE.map((x,i)=>`<button data-g="${i}" aria-pressed="${i===gi}">${x.t}</button>`).join("")}</div>
-  <div class="gbody"><h3>${g.t}</h3><p class="gsub">${g.s}</p><div class="gflow">${flow}</div>${g.n?`<div class="gnote">${g.n}</div>`:""}<div class="gdots">${GUIDE.map((x,i)=>`<i class="${i===gi?"on":""}"></i>`).join("")}</div></div>
+  <div class="gbody"><h3>${g.t}</h3><p class="gsub">${g.s}　<span style="color:var(--gold)">點截圖可放大</span></p><div class="gflow">${flow}</div><div class="gdots">${GUIDE.map((x,i)=>`<i class="${i===gi?"on":""}"></i>`).join("")}</div></div>
   <div class="gft"><button id="gprev"${gi?"":" disabled style=\"opacity:.35\""}>上一步</button><button class="gn" id="gnext">${gi===GUIDE.length-1?"開始使用":"下一步：" +GUIDE[gi+1].t}</button></div>`;
   $("#gtabs").onclick=e=>{const b=e.target.closest("[data-g]");if(b){gi=+b.dataset.g;renderGuide()}};
+  $(".gbody").onclick=e=>{const im=e.target.closest("[data-gz]");if(im)zoom(im.dataset.gz,im.dataset.gt,"")};
   const at=$(`#gtabs [data-g="${gi}"]`);if(at)at.scrollIntoView({inline:"center",block:"nearest"});
   $("#gskip").onclick=closeGuide;$("#gprev").onclick=()=>{if(gi){gi--;renderGuide()}};
   $("#gnext").onclick=()=>{if(gi<GUIDE.length-1){gi++;renderGuide();$(".gbody").scrollTop=0}else closeGuide()};
 }
 function openGuide(i){gi=i||0;renderGuide();$("#guide").classList.add("on");document.body.style.overflow="hidden"}
-function closeGuide(){$("#guide").classList.remove("on");document.body.style.overflow="";try{localStorage.setItem("sa_exp_guide_v1","1")}catch(e){}if(!lastBy)setTimeout(()=>{toast("先在右上角選操作人");const w=$("#who");w.classList.add("need")},300)}
+function closeGuide(){$("#guide").classList.remove("on");document.body.style.overflow="";try{localStorage.setItem("sa_exp_guide_v2","1")}catch(e){}if(!lastBy)setTimeout(()=>{toast("先在右上角選操作人");const w=$("#who");w.classList.add("need")},300)}
 $("#help").onclick=()=>openGuide(0);
 
 /* ---------- 設定：人員名單 ---------- */
@@ -956,7 +949,7 @@ $("#setb").onclick=settingsPanel;
 
 const WHO=$("#who");fillWho();WHO.classList.toggle("need",!lastBy);WHO.onchange=()=>{remember(WHO.value);toast(WHO.value?"操作人："+WHO.value:"已清除操作人")};
 render();
-try{if(!localStorage.getItem("sa_exp_guide_v1"))openGuide(0)}catch(e){}
+try{if(!localStorage.getItem("sa_exp_guide_v2"))openGuide(0)}catch(e){}
 </script>
 </body>
 </html>
