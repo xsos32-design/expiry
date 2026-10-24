@@ -345,6 +345,13 @@ header{position:sticky;top:0;z-index:10;background:var(--ground);padding-top:8px
  .nm{font-size:15px}
  .meta{font-size:13px}
 }
+.cath{display:flex;align-items:center;gap:8px;margin:14px 0 2px;padding:8px 10px;background:var(--surface);border:1px solid var(--edge);font-weight:900;font-size:15px}
+.cath span{font-size:12px;color:var(--faint);margin-right:auto}
+.hbtn.adm{background:var(--gold);color:#241900;border-color:var(--gold)}
+.admbar{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--gold);color:var(--gold);font-weight:900;margin-bottom:10px}
+.admbar button{margin-left:auto;border:1px solid var(--edge);padding:6px 12px;color:var(--ink);font-weight:900}
+.lgn select,.lgn input{width:100%;height:46px;background:var(--ground);border:1px solid var(--edge);color:var(--ink);padding:0 10px;font-size:16px;margin-bottom:8px}
+.shimg{width:100%;margin-top:8px;border:1px solid var(--gold);color:var(--gold);height:46px;font-weight:900}
 </style>
 </head>
 <body>
@@ -427,7 +434,7 @@ let view=new Date(today.getFullYear(),today.getMonth(),1);
 const wkOf=d=>addD(d,-d.getDay());let calOpen=false;try{calOpen=localStorage.getItem("sa_exp_cal")==="1"}catch(e){}let wk=wkOf(today);
 let sel=new Date(today);
 let mode="near",bucket=null,counting=false,draft={},q="",storeF="";
-let lastBy=localStorage.getItem("sa_exp_by")||"";
+let lastBy=localStorage.getItem("sa_exp_by")||"";let ADMIN="";try{ADMIN=localStorage.getItem("sa_exp_admin")||""}catch(e){}const ADMIN_PW="user";
 let lastStore=localStorage.getItem("sa_exp_store")||"";
 const remember=by=>{lastBy=by;localStorage.setItem("sa_exp_by",by);document.querySelectorAll(".bylv").forEach(e=>e.textContent=by||"未選");const w=document.getElementById("who");if(w){if(w.value!==by)w.value=by;w.classList.toggle("need",!by)}};
 
@@ -627,7 +634,7 @@ function addSheet(pre){
   <div class="f"><label>店別</label>${storeSeg("ast",pre&&pre.store||lastStore)}</div>
   <div class="f"><label>大類</label><div class="cat2"><button class="c" data-cat="07">07 巧克力</button><button class="s" data-cat="08">08 菸類</button></div></div>
   <div class="f"><label>品名</label><input id="aname" autocomplete="off" placeholder="打品名、品牌或品號"><div class="pick" id="pick"></div><div id="chosen"></div><div class="rec" id="arec"></div></div>
-  <div class="f" id="phf" style="display:none"><label>照片（選填，拍一次之後同品名都會用）</label><input id="aph" type="file" accept="image/*" capture="environment" style="padding-top:9px"></div>
+  <div class="f" id="phf" style="display:none"><label>照片（選填，拍一次之後同品名都會用）</label><input id="aph" type="file" accept="image/*" style="padding-top:9px"></div>
   <div class="f2"><div class="f"><label id="aexpl">有效日期</label><div class="ein"><input id="aexpt" inputmode="numeric" autocomplete="off" enterkeyhint="next"><button type="button" class="cal1" id="aexpb" aria-label="用日曆選">📅</button><input id="aexp" type="date" class="hid" tabindex="-1"><input id="aexpm" type="month" class="hid" tabindex="-1"></div><small class="ev" id="aexpv"></small></div><div class="f"><label>數量</label><input id="aqty" type="number" inputmode="numeric" min="1" value="1"></div></div>
   <div class="f2"><div class="f"><label>售價（選填）</label><input id="aprice" type="number" inputmode="numeric" min="0" placeholder="例：380" value="${pre&&pre.price||""}"></div><div class="f"><label>屆期折扣（選填）</label><select id="adisc">${discOpts(pre&&pre.disc)}</select></div></div>
   <p class="byl">操作人：<b class="bylv">${esc(lastBy)||"未選"}</b><small>右上角可換人</small></p>
@@ -649,7 +656,7 @@ function addSheet(pre){
   const expVal=()=>parseExp($("#aexpt").value,cat);
   const hint=()=>{const e=expVal();if(!e){$("#ahint").textContent="";return}const l={cat,exp:e,name:picked?picked.n:$("#aname").value,brand:picked?picked.b:"",qty:1};const p=pullDate(l);const a=[3,2,1].map(k=>{const d=enterDate(l,k);return `${k}個月 ${mdS(addD(d,-7))}～${mdS(d)}`}).join("、");$("#ahint").textContent=(p?`下架日 ${p.getFullYear()}/${p.getMonth()+1}/${p.getDate()}。`:"")+`屆期條碼申請：${a}。`};
   document.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>setCat(b.dataset.cat));
-  $("#aname").oninput=()=>{picked=null;showPicked();pick()};$("#aname").onfocus=pick;
+  let comp=false;const onName=()=>{picked=null;showPicked();pick()};$("#aname").addEventListener("compositionstart",()=>comp=true);$("#aname").addEventListener("compositionend",()=>{comp=false;onName()});$("#aname").oninput=e=>{if(comp||e.isComposing)return;onName()};$("#aname").onfocus=pick;
   $("#aname").onblur=()=>setTimeout(()=>{const p=$("#pick");if(p)p.classList.remove("on")},180);
   $("#pick").onmousedown=e=>e.preventDefault();
   $("#pick").onclick=e=>{const b=e.target.closest("button");if(!b)return;$("#aname").value=b.dataset.n;picked=b.dataset.k?CATMAP[b.dataset.k]:null;if(picked&&picked.p)$("#aprice").value=picked.p;else if(!picked){const o=lots.find(l=>l.cat==="08"&&l.name===b.dataset.n&&l.price);if(o)$("#aprice").value=o.price}showPicked();$("#pick").classList.remove("on");$("#aexpt").focus()};
@@ -697,6 +704,7 @@ function openLot(id){
   openSheet(`<h4><span>${esc(l.name)}</span><button class="x" aria-label="關閉">×</button></h4>
   <div class="big">${im?`<img src="${im}" alt="${esc(l.name)}" id="bigimg">`:`<div class="no">還沒有照片</div>`}</div>
   <dl class="kv"><dt>大類</dt><dd>${l.cat==="07"?"07 巧克力":"08 菸類"}</dd>${l.brand?`<dt>品牌</dt><dd>${esc(l.brand)}</dd>`:""}${l.code?`<dt>品號</dt><dd>${l.no}　${l.code}</dd>`:""}<dt>有效日期</dt><dd>${fx(l)}（${left<0?"已過期 "+(-left)+" 天":"還有 "+left+" 天"}）</dd>${p?`<dt>應下架</dt><dd style="color:var(--gold)">${p.getFullYear()}/${p.getMonth()+1}/${p.getDate()}</dd>`:""}${ap?`<dt>條碼申請</dt><dd style="color:var(--gold)">${ap.done?`${ap.k}個月已申請`:ap.late?`${ap.k}個月未申請（已逾期）`:`${mdS(ap.enter)} 前申請 ${ap.k} 個月`}</dd>`:""}${apHist?`<dt>申請紀錄</dt><dd>${apHist}</dd>`:""}<dt>登錄</dt><dd>${esc(l.by)}　${new Date(l.at).toLocaleDateString("zh-TW")}</dd></dl>
+  ${l.code?"":`<div class="f"><label>品名（可以有空格）</label><input id="en" autocomplete="off" value="${esc(l.name)}"></div>`}
   <div class="f"><label>店別</label>${storeSeg("est",l.store)}</div>
   <div class="f"><label>有效${l.cat==="08"?"年月":"日期"}（打錯可直接改）</label><input id="ee" inputmode="numeric" autocomplete="off" value="${fx(l)}"><small class="ev" id="eev"></small></div>
   <div class="f2"><div class="f"><label>數量</label><input id="eq" type="number" inputmode="numeric" min="0" value="${l.qty}"></div><div class="f"><label>售價</label><input id="ep" type="number" inputmode="numeric" min="0" value="${l.price||""}"></div></div>
@@ -704,19 +712,19 @@ function openLot(id){
   <button class="go" id="esave">存修改</button>
   ${live(l)?`<button class="ghost" id="epull" style="border-color:var(--gold);color:var(--gold)">確認下架這批</button>`:""}
   <button class="ghost" id="eagain">同品項再登一批</button>
-  <div class="f" style="margin-top:12px"><label>${im?"換照片":"拍照或選照片"}（同品名都會用這張）</label><input id="eph" type="file" accept="image/*" capture="environment" style="padding-top:9px"></div>
-  <button class="ghost danger" id="edel">刪除這批</button>`);
+  <div class="f" style="margin-top:12px"><label>${im?"換照片":"拍照或選照片"}（同品名都會用這張）</label><input id="eph" type="file" accept="image/*" style="padding-top:9px"></div>
+  <button class="ghost danger" id="edel">${ADMIN?"刪除這批":"刪除這批（需管理者）"}</button>`);
   wireSeg("est");
   $("#ee").oninput=()=>{const e=parseExp($("#ee").value,l.cat),o=$("#eev");o.textContent=e?(e===l.exp?"":"→ 改成 "+fx({...l,exp:e})+"（條碼申請紀錄會重算）"):"看不懂這個效期";o.className="ev "+(e?"ok":"bad")};
   const bi=$("#bigimg");if(bi)bi.onclick=()=>zoom(im,l.name,fx(l)+"　× "+l.qty);
   $("#eph").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{await putPhoto(pkey(l),await shrink(f));toast("照片已更新");closeSheet()}catch(err){toast("照片沒存成功")}};
-  $("#esave").onclick=async()=>{const q2=parseInt($("#eq").value,10),by=lastBy,price=parseInt($("#ep").value,10)||"",disc=$("#ed").value,store=segVal("est"),ex=parseExp($("#ee").value,l.cat);if(!ex)return toast("效期看不懂");if(!(q2>=0))return toast("數量不對");if(!by)return needWho();remember(by);
-    if(q2===l.qty&&price===(l.price||"")&&disc===(l.disc||"")&&store===(l.store||"")&&ex===l.exp)return closeSheet();
-    const nl={...l,qty:q2,price,disc,store,exp:ex};if(ex!==l.exp)delete nl.apply;await putLot(nl);const ch=[];if(ex!==l.exp)ch.push("效期 "+fx(l)+"→"+fx(nl));if(q2!==l.qty)ch.push("數量");if(price!==(l.price||""))ch.push("售價 "+(price||"—"));if(disc!==(l.disc||""))ch.push("折扣 "+(disc||"無"));if(store!==(l.store||""))ch.push("店別 "+store);
+  $("#esave").onclick=async()=>{const q2=parseInt($("#eq").value,10),by=lastBy,price=parseInt($("#ep").value,10)||"",disc=$("#ed").value,store=segVal("est"),ex=parseExp($("#ee").value,l.cat),nm=$("#en")?$("#en").value.trim():l.name;if(!nm)return toast("品名不能空白");if(!ex)return toast("效期看不懂");if(!(q2>=0))return toast("數量不對");if(!by)return needWho();remember(by);
+    if(q2===l.qty&&price===(l.price||"")&&disc===(l.disc||"")&&store===(l.store||"")&&ex===l.exp&&nm===l.name)return closeSheet();
+    const nl={...l,qty:q2,price,disc,store,exp:ex,name:nm};if(nm!==l.name){const oi=photos[pkey(l)];if(oi&&!photos[pkey(nl)])try{await putPhoto(pkey(nl),oi)}catch(e){}}if(ex!==l.exp)delete nl.apply;await putLot(nl);const ch=[];if(nm!==l.name)ch.push("品名→"+nm);if(ex!==l.exp)ch.push("效期 "+fx(l)+"→"+fx(nl));if(q2!==l.qty)ch.push("數量");if(price!==(l.price||""))ch.push("售價 "+(price||"—"));if(disc!==(l.disc||""))ch.push("折扣 "+(disc||"無"));if(store!==(l.store||""))ch.push("店別 "+store);
     await putLog({id:uid(),t:"修改",lot:l.id,cat:l.cat,name:l.name+"（"+ch.join("、")+"）",exp:l.exp,from:l.qty,to:q2,by,at:Date.now()});closeSheet();toast("已更新")};
   const ep=$("#epull");if(ep)ep.onclick=async()=>{const by=lastBy;if(!by)return needWho();remember(by);await doPull([l],by);closeSheet()};
   $("#eagain").onclick=()=>(closeSheet(),addSheet({cat:l.cat,code:l.code,name:l.name,store:l.store,price:l.price,disc:l.disc}));
-  $("#edel").onclick=async()=>{const by=lastBy;if(!by)return needWho();const eb=$("#edel");if(!eb.dataset.ok){eb.dataset.ok=1;eb.textContent="再按一次確認刪除";return}await delLot(l.id);await putLog({id:uid(),t:"刪除",lot:l.id,cat:l.cat,name:l.name,exp:l.exp,from:l.qty,to:0,by,at:Date.now()});closeSheet();toast("已刪除："+l.name,async()=>{try{await putLot(l);await putLog({id:uid(),t:"復原刪除",lot:l.id,cat:l.cat,name:l.name,exp:l.exp,from:0,to:l.qty,by,at:Date.now()});toast("已復原")}catch(e){toast("復原沒成功")}})};
+  $("#edel").onclick=async()=>{if(!ADMIN){closeSheet();toast("刪除要管理者權限，請先登入");return loginPanel(true)}const by=lastBy;if(!by)return needWho();const eb=$("#edel");if(!eb.dataset.ok){eb.dataset.ok=1;eb.textContent="再按一次確認刪除";return}await delLot(l.id);await putLog({id:uid(),t:"刪除",lot:l.id,cat:l.cat,name:l.name,exp:l.exp,from:l.qty,to:0,by,at:Date.now()});closeSheet();toast("已刪除："+l.name,async()=>{try{await putLot(l);await putLog({id:uid(),t:"復原刪除",lot:l.id,cat:l.cat,name:l.name,exp:l.exp,from:0,to:l.qty,by,at:Date.now()});toast("已復原")}catch(e){toast("復原沒成功")}})};
 }
 
 /* ---------- shared checklist panel ---------- */
@@ -760,10 +768,10 @@ function applyPanel(force,noScroll){
   const soon=lots.map(l=>[l,nextApply(l)]).filter(([l,n])=>n&&diff(today,n.start)<=21).sort((x,y)=>x[1].start-y[1].start);
   const done=[];lots.forEach(l=>{if(l.apply)for(const k in l.apply)done.push([l,k,l.apply[k]])});done.sort((x,y)=>y[2].at-x[2].at);
   const nSel=Object.keys(apSel).length;
-  const groups=[3,2,1].map(k=>[k,a.filter(l=>needApply(l).k===k)]).filter(g=>g[1].length);
+  const groups=[];["07","08"].forEach(c=>{const ca=a.filter(l=>l.cat===c);[3,2,1].forEach(k=>{const g=ca.filter(l=>needApply(l).k===k);if(g.length)groups.push([k,g,c,ca.length])})});
   const h=`<h4>屆期條碼申請<button class="x" aria-label="關閉">×</button></h4>
   <p class="hint" style="margin:-4px 0 10px">到期前 3、2、1 個月各申請一次，進入前一週要申請好。</p>
-  ${a.length?`<label class="pall"><input type="checkbox" id="pa" ${nSel&&nSel===a.length?"checked":""}>全選（${a.length} 批）</label>${groups.map(([k,g])=>`<div class="tier">進入 ${k} 個月　${g.length} 批</div>`+checkRows(g,apSel,l=>{const n=needApply(l);return n.late?`<br><span class="ap late">已進入 ${k} 個月，未申請</span>`:`<br><span class="ap">${mdS(n.enter)}（${W[n.enter.getDay()]}）前申請</span>`},l=>`<button class="rgo qap" data-qap="${l.id}">已申請</button>`)).join("")}
+  ${a.length?`<label class="pall"><input type="checkbox" id="pa" ${nSel&&nSel===a.length?"checked":""}>全選（${a.length} 批）</label>${groups.map(([k,g,c,cn],i)=>(i===0||groups[i-1][2]!==c?`<div class="cath">${c==="07"?"🍫 巧克力":"🚬 香煙"}<span>${cn} 批</span><button class="rgo" data-amsg="${c}">複製申請訊息</button></div>`:"")+`<div class="tier">${c==="07"?"巧克力":"香煙"}・進入 ${k} 個月　${g.length} 批</div>`+checkRows(g,apSel,l=>{const n=needApply(l);return n.late?`<br><span class="ap late">已進入 ${k} 個月，未申請</span>`:`<br><span class="ap">${mdS(n.enter)}（${W[n.enter.getDay()]}）前申請</span>`},l=>`<button class="rgo qap" data-qap="${l.id}">已申請</button>`)).join("")}
   <p class="byl">操作人：<b class="bylv">${esc(lastBy)||"未選"}</b><small>右上角可換人</small></p>
   <button class="go" id="ago">${nSel?`確認已申請 ${nSel} 批`:"先勾選批次"}</button>`:`<p class="hint" style="padding:6px 0">這週沒有要申請的。</p>`}
   <div class="grp g4" style="margin-top:18px;padding-left:0;padding-right:0"><span>接下來三週</span><span>${soon.length} 批</span></div>
@@ -772,6 +780,7 @@ function applyPanel(force,noScroll){
   <div class="log">${done.length?done.slice(0,30).map(([l,k,v])=>`<div><span><b>${esc(l.name)}</b><br><small>${l.store||""}　效期 ${fx(l)}　${k} 個月</small></span><span style="text-align:right"><small>${esc(v.by)}　${stamp(v.at)}</small><br><button class="undo" data-ua="${l.id}|${k}">復原</button></span></div>`).join(""):`<p class="hint">還沒有申請紀錄</p>`}</div>`;
   if(!openPanel("apply",h,force,noScroll))return;
   wireChecks(a,apSel,"ago","確認已申請");
+  $("#panel").querySelectorAll("[data-amsg]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();msgType="apply";msgCat=b.dataset.amsg;msgStore="";msgSheet(false)});
   const go=$("#ago");if(go)go.onclick=async()=>{const ids=Object.keys(apSel);if(!ids.length)return toast("請先勾選已申請的批次");const by=lastBy;if(!by)return needWho();remember(by);go.disabled=true;go.textContent="儲存中…";const at=Date.now();
     try{for(const id of ids){const l=lots.find(x=>x.id===id),n=l&&needApply(l);if(!n)continue;await putLot({...l,apply:{...(l.apply||{}),[n.k]:{by,at}}});await putLog({id:uid(),t:`申請屆期條碼（${n.k}個月）`,lot:l.id,cat:l.cat,name:l.name,exp:l.exp,from:l.qty,to:l.qty,by,at})}apSel={};toast(`已記錄 ${ids.length} 批申請（${by}）`)}catch(e){toast("沒存成功："+(e.code||e.message))}applyPanel(true,true)};
   $("#panel").querySelectorAll("[data-ua]").forEach(b=>b.onclick=async()=>{const[id,k]=b.dataset.ua.split("|"),l=lots.find(x=>x.id===id);if(!l)return;if(!b.dataset.ok){b.dataset.ok=1;b.textContent="再按一次復原";return}const ap={...(l.apply||{})};delete ap[k];await putLot({...l,apply:ap});await putLog({id:uid(),t:`取消條碼申請（${k}個月）`,lot:l.id,cat:l.cat,name:l.name,exp:l.exp,from:l.qty,to:l.qty,by:lastBy||"—",at:Date.now()});applyPanel(true,true)});
@@ -840,8 +849,9 @@ function buildApplyMsg(){
   const a=lots.filter(l=>needApply(l)&&(!msgStore||l.store===msgStore)&&(!msgCat||l.cat===msgCat));
   let out=`【屆期條碼申請提醒】${mdS(today)}（${W[today.getDay()]}）`;
   if(!a.length)return out+"\n\n本週沒有要申請的品項";
-  for(const k of [3,2,1]){const g=a.filter(l=>needApply(l).k===k).sort((x,y)=>(x.store||"").localeCompare(y.store||"")||(x.exp<y.exp?-1:1));if(!g.length)continue;
-    out+=`\n\n▍${k}個月內到期`+g.map(l=>{const n=needApply(l);return `\n${l.store||""} ${l.cat==="07"?"🍫":"🚬"} ${l.name}\n${fx(l)}*${l.qty}｜${n.late?"⚠️已逾期":mdS(n.enter)+"前申請"}`}).join("")}
+  for(const c of ["07","08"]){const ca=a.filter(l=>l.cat===c);if(!ca.length)continue;out+=`\n\n${c==="07"?"🍫【巧克力】":"🚬【香煙】"}共 ${ca.length} 批`;
+  for(const k of [3,2,1]){const g=ca.filter(l=>needApply(l).k===k).sort((x,y)=>(x.store||"").localeCompare(y.store||"")||(x.exp<y.exp?-1:1));if(!g.length)continue;
+    out+=`\n\n▍${k}個月內到期`+g.map(l=>{const n=needApply(l);return `\n${l.store||""} ${l.name}\n${fx(l)}*${l.qty}｜${n.late?"⚠️已逾期":mdS(n.enter)+"前申請"}`}).join("")}}
   return out+"\n\n申請好請到屆期表按「確認已申請」，謝謝！";
 }
 function msgSheet(force){
@@ -860,7 +870,9 @@ function msgSheet(force){
   <textarea class="msg" id="mt" aria-label="訊息內容（可直接修改）"></textarea>
   <p class="hint" id="mhint"></p>
   <div class="f" id="mbyf" style="margin-top:8px"><p class="byl">操作人：<b class="bylv">${esc(lastBy)||"未選"}</b><small>右上角可換人</small></p></div>
-  <button class="go" id="mc">複製訊息</button>`,force,force))return;
+  <button class="go" id="mc">複製訊息</button>
+  <button class="shimg" id="mimg">🖼 產生含縮圖的圖片（可分享到 LINE）</button>`,force,force))return;
+  $("#mimg").onclick=async()=>{const b=$("#mimg");b.disabled=true;b.textContent="圖片產生中…";try{await shareImg(msgType==="report")}catch(e){toast("圖片沒做成功："+(e.message||e))}b.disabled=false;b.textContent="🖼 產生含縮圖的圖片（可分享到 LINE）"};
   const changed=()=>reportLots().filter(l=>mq(l)!==l.qty);
   const list=()=>{const a=reportLots();$("#mlist").innerHTML=a.length?a.map(l=>{const v=mq(l),d=v-l.qty;return `<div class="mrow"><span class="mn"><b>${l.store||"?"} ${l.cat==="07"?"🍫":"🚬"} ${esc(l.name)}</b><small>${fx(l)}${l.disc?"　⬇"+l.disc:""}　帳上 ${l.qty}${d?`<em class="${d<0?"m":"p"}">${d>0?"+":""}${d}</em>`:""}</small></span><span class="step"><button data-dq="${l.id}" data-v="-1" aria-label="減一">−</button><input data-iq="${l.id}" type="number" inputmode="numeric" min="0" value="${v}" class="${d?"chg":""}" aria-label="今日數量"><button data-dq="${l.id}" data-v="1" aria-label="加一">＋</button></span></div>`}).join(""):`<p class="hint">沒有符合的品項</p>`};
   const fill=()=>{const rep=msgType==="report";$("#mopt").style.display=rep?"":"none";$("#mbyf").style.display=rep?"":"none";$("#mt").value=rep?buildReport():buildApplyMsg();
@@ -887,6 +899,38 @@ function msgSheet(force){
   };
 }
 $("#tMsg").onclick=()=>msgSheet(false);
+const loadImg=src=>new Promise(res=>{if(!src)return res(null);const i=new Image();if(!src.startsWith("data:"))i.crossOrigin="anonymous";i.onload=()=>res(i);i.onerror=()=>res(null);i.src=src;setTimeout(()=>res(null),8000)});
+async function shareImg(rep){
+  let items;
+  if(rep)items=reportLots().filter(l=>mq(l)>0).map(l=>({l,q:mq(l),sub:l.disc?"⬇"+l.disc:""}));
+  else items=lots.filter(l=>needApply(l)&&(!msgStore||l.store===msgStore)&&(!msgCat||l.cat===msgCat)).sort((x,y)=>x.cat<y.cat?-1:x.cat>y.cat?1:needApply(y).k-needApply(x).k||(x.exp<y.exp?-1:1)).map(l=>{const n=needApply(l);return {l,q:l.qty,sub:`${n.k}個月　${n.late?"已逾期":mdS(n.enter)+"前申請"}`}});
+  if(!items.length)return toast("沒有品項可以做圖");
+  const secs=[];items.forEach(it=>{const key=it.l.cat+"|"+(it.l.store||"");let s=secs.find(x=>x.key===key);if(!s)secs.push(s={key,cat:it.l.cat,store:it.l.store||"店別未填",a:[]});s.a.push(it)});
+  const W2=1080,TH=150,RH=176,SH=84,HD=150,FT=60,H=HD+secs.reduce((h,s)=>h+SH+s.a.length*RH,0)+FT;
+  if(H>16000)return toast("品項太多，請先選店別或類別再做圖");
+  const imgs=await Promise.all(items.map(it=>loadImg(imgOf(it.l))));
+  const cv=document.createElement("canvas");cv.width=W2;cv.height=H;const x=cv.getContext("2d");
+  const F='"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif';
+  x.fillStyle="#fff";x.fillRect(0,0,W2,H);x.fillStyle="#0b1220";x.fillRect(0,0,W2,HD);
+  x.fillStyle="#ffc53d";x.font=`900 50px ${F}`;x.fillText(rep?"屆期回報":"屆期條碼申請提醒",40,72);
+  x.fillStyle="#cfd6df";x.font=`700 32px ${F}`;x.fillText(`營三部 SA　${mdS(rep?sel:today)}（${W[(rep?sel:today).getDay()]}）　共 ${items.length} 批`,40,122);
+  let y=HD,k=0;
+  for(const s of secs){x.fillStyle=s.cat==="07"?"#7a4a12":"#1d3a63";x.fillRect(0,y,W2,SH);x.fillStyle="#fff";x.font=`900 38px ${F}`;x.fillText(`${s.store}　${s.cat==="07"?"🍫 巧克力":"🚬 香煙"}　${s.a.length} 批`,40,y+56);y+=SH;
+    for(const it of s.a){const l=it.l,im=imgs[items.indexOf(it)];
+      x.fillStyle="#f3f4f6";x.fillRect(32,y+13,TH,TH);
+      if(im){const r=Math.min(TH/im.width,TH/im.height),w=im.width*r,h=im.height*r;x.drawImage(im,32+(TH-w)/2,y+13+(TH-h)/2,w,h)}else{x.fillStyle="#9aa3ad";x.font=`700 26px ${F}`;x.fillText("無圖",72,y+98)}
+      const tx=32+TH+28,mw=W2-tx-36;x.fillStyle="#111";x.font=`900 36px ${F}`;let nm=l.name;while(x.measureText(nm).width>mw&&nm.length>2)nm=nm.slice(0,-2)+"…";x.fillText(nm,tx,y+58);
+      x.font=`800 34px ${F}`;x.fillStyle="#b4232f";x.fillText(`效期 ${fx(l)}`,tx,y+106);const ew=x.measureText(`效期 ${fx(l)}`).width;
+      x.fillStyle="#111";x.fillText(`${l.price?"　$"+l.price:"　"} × ${it.q}`,tx+ew,y+106);
+      if(it.sub){x.font=`800 28px ${F}`;x.fillStyle="#a8660b";x.fillText(it.sub,tx,y+148)}
+      y+=RH;x.fillStyle="#e5e7eb";x.fillRect(32,y-1,W2-64,2)}
+  }
+  x.fillStyle="#6b7280";x.font=`700 24px ${F}`;x.fillText("由 屆期表 產生　"+new Date().toLocaleString("zh-TW"),40,H-24);
+  const blob=await new Promise(r=>cv.toBlob(r,"image/jpeg",.86));if(!blob)throw new Error("瀏覽器不支援");
+  const fn=`${rep?"屆期回報":"條碼申請"}_${ymd(rep?sel:today)}.jpg`,file=new File([blob],fn,{type:"image/jpeg"});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file]});return toast("已分享")}catch(e){if(e.name==="AbortError")return}}
+  const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast("圖片已下載，到相簿／下載找它再傳到群組")
+}
 
 /* ---------- demo ---------- */
 async function demo(){
@@ -903,7 +947,7 @@ async function undemo(){for(const l of lots.filter(x=>x.demo))await delLot(l.id)
 const K=(t,c)=>`<span class="kb${c?" "+c:""}">${t}</span>`;
 const GUIDE=[
  {t:"開始之前",s:"先認識畫面，紅框就是要看、要按的地方",f:[
-  ["右上角選「操作人」",`點 ${K("操作人？")} 選你自己，選一次就會記住。名單沒有你就按旁邊 ${K("⚙")} 新增。`,0,"g01"],
+  ["右上角選「操作人」",`點 ${K("操作人？")} 選你自己，選一次就會記住。名單沒有你，請管理者到 ${K("⚙")} 新增。`,0,"g01"],
   ["看「今日任務」和行事曆",`最上面三格是今天要做的：金＝申請屆期條碼、紅＝該下架、綠＝每日回報，點下去直接處理。行事曆平常收成一週，按 ${K("▼ 展開整月")} 看整個月；小數字＝那天到期的批數。`,0,"g02"],
   ["下方 7 個功能鍵",`${K("登錄")}${K("條碼")}${K("下架")}${K("盤點")}${K("訊息")}${K("紀錄")}${K("匯出")}，點了會在功能列下方展開。`,0,"g03"],
   ["看清單",`手機上用分頁切換 ${K("07 巧克力")}／${K("08 菸類")}。每批下面有快速鍵：${K("−1","t")} 賣出、${K("條碼✓")} 已申請、${K("下架","r")}。點品名可以修改。`,1,"g12"]]},
@@ -926,15 +970,15 @@ const GUIDE=[
  {t:"每日回報（群組訊息）",s:"每天貼到群組的屆期回報",f:[
   ["按「訊息」，選每日回報和範圍","上到下：每日回報／條碼申請提醒、店別、香煙或巧克力、一～三個月內。",0,"g15"],
   ["今天賣掉幾個就按 −","數量和訊息一起扣，旁邊紅字顯示扣了幾個；扣到 0 就不會出現在回報。",0,"g16"],
-  ["確認預覽，按「存數量並複製」","數量寫回系統、訊息已複製，直接貼到群組。預覽內容也可以先手動改。",1,"g17"]]},
+  ["確認預覽，按「存數量並複製」",`數量寫回系統、訊息已複製，直接貼到群組。要讓大家看到商品圖，按 ${K("🖼 產生含縮圖的圖片")} 分享到 LINE。`,1,"g17"]]},
  {t:"賣出、修改、刪除",s:"平常維護效期資料",f:[
   ["賣掉一個：按「−1」",`數量直接扣 1，底部出現提示，6 秒內按 ${K("復原")} 可以撤回。`,0,"g18"],
-  ["要修改：點品名，改完按「存修改」",`可以改店別、效期、數量、售價、折扣。效期一樣直接打數字。最下面 ${K("刪除這批","r")} 要按兩次，刪完也能復原。`,1,"g19"]]},
+  ["要修改：點品名，改完按「存修改」",`可以改店別、效期、數量、售價、折扣。效期一樣直接打數字。最下面 ${K("刪除這批","r")} 要管理者登入（⚙），按兩次才刪，刪完也能復原。`,1,"g19"]]},
  {t:"盤點",s:"定期核對帳上數量",f:[
   ["按「盤點」，每批會多一個數量格","輸入實際點到的數量，有改的會變黃，旁邊顯示帳上數量。",0,"g20"],
   ["按「存盤點」","記在右上角操作人名下；差異會寫進「紀錄」，帳實相符也會記一筆。",1,"g21"]]},
- {t:"設定人員名單",s:"右上角 ⚙，所有人共用",f:[
-  ["按 ⚙，新增、排序、刪除人名",`打名字按 ${K("＋")} 新增；↑↓ 調順序，常用的放前面；刪除要按兩次。這份名單會出現在操作人和所有「○○人」的下拉選單。`,1,"g22"]]}
+ {t:"管理者設定",s:"右上角 ⚙，登入管理者才能改",f:[
+  ["按 ⚙，選名字、打密碼登入管理者",`登入後 ⚙ 會變金色，可以改人員名單、刪除批次，用完按「登出」。打名字按 ${K("＋")} 新增；↑↓ 調順序，常用的放前面；刪除要按兩次。這份名單會出現在操作人和所有「○○人」的下拉選單。`,1,"g22"]]}
 ];
 let gi=0;
 const GIMG=n=>"g"+n.slice(1)+".jpg";
@@ -961,19 +1005,33 @@ function fillWho(){const w=$("#who");if(!w)return;const list=[...PEOPLE,...(last
 function applyPeople(p){PEOPLE=p.slice();try{localStorage.setItem("sa_exp_people",JSON.stringify(PEOPLE))}catch(e){}fillWho()}
 async function savePeople(list,msg){applyPeople(list);CFG={...CFG,people:list};setPanel();try{await send({a:"putCfg",d:CFG});await putLog({id:uid(),t:"設定",name:msg,from:0,to:0,by:lastBy||"—",at:Date.now()});toast(msg)}catch(e){toast("沒存到雲端："+(e.message||e))}}
 function setPanel(){
-  if(panelKey!=="set")return;
+  if(panelKey!=="set"||!$("#plist"))return;
   const pc=$("#pcnt");if(pc)pc.textContent=PEOPLE.length;
   $("#plist").innerHTML=PEOPLE.map((p,i)=>`<div class="prw"><b>${esc(p)}</b><button data-pu="${i}" aria-label="往上"${i?"":" disabled"}>↑</button><button data-pd="${i}" aria-label="往下"${i<PEOPLE.length-1?"":" disabled"}>↓</button><button class="pdel" data-px="${i}">刪除</button></div>`).join("");
 }
-function settingsPanel(){
+function markAdm(){const s=$("#setb");if(s){s.classList.toggle("adm",!!ADMIN);s.setAttribute("aria-label",ADMIN?"設定（管理者）":"設定")}}
+function loginPanel(force){
+  if(!openPanel("set",`<h4>管理者登入<button class="x" aria-label="關閉">×</button></h4>
+  <p class="hint" style="margin:0 0 10px">管理者可以：設定人員名單、刪除批次。一般登錄、盤點、下架、申請不用登入。</p>
+  <div class="lgn"><label class="hint">名字</label><select id="lgu">${PEOPLE.map(p=>`<option${p===lastBy?" selected":""}>${esc(p)}</option>`).join("")}</select>
+  <label class="hint">密碼</label><input id="lgp" type="password" autocomplete="off" enterkeyhint="go" placeholder="輸入密碼"></div>
+  <button class="go" id="lgo">登入</button>
+  <div class="tier" style="margin-top:16px">人員名單（${PEOPLE.length} 人）</div><p class="hint">${PEOPLE.map(esc).join("、")}</p>`,force))return;
+  const go=()=>{if($("#lgp").value!==ADMIN_PW){$("#lgp").value="";return toast("密碼不對")}const u=$("#lgu").value;ADMIN=u;try{localStorage.setItem("sa_exp_admin",u)}catch(e){}remember(u);markAdm();putLog({id:uid(),t:"管理者登入",name:u,from:0,to:0,by:u,at:Date.now()}).catch(()=>{});toast("管理者："+u);settingsPanel(true)};
+  $("#lgo").onclick=go;$("#lgp").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();go()}};setTimeout(()=>{const p=$("#lgp");if(p)p.focus()},100);
+}
+function settingsPanel(force){
+  if(!ADMIN)return loginPanel(force===true);
   if(!openPanel("set",`<h4>設定<button class="x" aria-label="關閉">×</button></h4>
+  <div class="admbar">🔑 管理者：${esc(ADMIN)}<button id="lgout">登出</button></div>
   <div class="tier" style="border-top:0;margin-top:0">人員名單（<span id="pcnt">${PEOPLE.length}</span> 人）</div>
   <p class="hint" style="margin:0 0 6px">這裡的名字會出現在右上角「操作人」，以及登錄人、下架人、申請人、盤點人、回報人的下拉選單。所有人共用，改了大家都會看到。</p>
   <div id="plist"></div>
   <div class="ein" style="margin-top:10px"><input id="pnew" maxlength="12" autocomplete="off" placeholder="新增人名或店號" style="height:44px;background:var(--ground);border:1px solid var(--edge);padding:0 10px;font-size:15px" enterkeyhint="done"><button class="padd" id="padd" aria-label="新增">＋</button></div>
   <p class="hint">按 ↑↓ 調整順序，常用的放前面。刪除只會從選單拿掉，過去的紀錄不受影響。</p>
-  <button class="ghost" id="preset">恢復預設名單</button>`))return;
+  <button class="ghost" id="preset">恢復預設名單</button>`,force===true))return;
   setPanel();
+  $("#lgout").onclick=()=>{ADMIN="";try{localStorage.removeItem("sa_exp_admin")}catch(e){}markAdm();toast("已登出管理者");closePanel()};
   const add=()=>{const v=$("#pnew").value.trim();if(!v)return toast("請輸入名字");if(PEOPLE.includes(v))return toast(v+" 已經在名單裡");$("#pnew").value="";savePeople([...PEOPLE,v],"新增人員："+v)};
   $("#padd").onclick=add;$("#pnew").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();add()}};
   $("#plist").onclick=e=>{const b=e.target.closest("button");if(!b)return;const L=PEOPLE.slice();
@@ -982,7 +1040,7 @@ function settingsPanel(){
     if(b.dataset.px){const i=+b.dataset.px;if(L.length<=1)return toast("至少要留一個人");if(!b.dataset.ok){b.dataset.ok=1;b.textContent="再按刪除";return}const n=L.splice(i,1)[0];savePeople(L,"刪除人員："+n)}};
   $("#preset").onclick=()=>{const b=$("#preset");if(!b.dataset.ok){b.dataset.ok=1;b.textContent="再按一次恢復預設";return}savePeople(DEF_PEOPLE.slice(),"人員名單恢復預設")};
 }
-$("#setb").onclick=settingsPanel;
+$("#setb").onclick=()=>settingsPanel(false);markAdm();
 
 const WHO=$("#who");fillWho();WHO.classList.toggle("need",!lastBy);WHO.onchange=()=>{remember(WHO.value);toast(WHO.value?"操作人："+WHO.value:"已清除操作人")};
 render();
