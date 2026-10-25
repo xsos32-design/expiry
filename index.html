@@ -884,7 +884,7 @@ function msgSheet(force){
   const fill=()=>{const rep=msgType==="report";$("#mopt").style.display=rep?"":"none";$("#mimgh").style.display=rep?"":"none";$("#mbyf").style.display=rep?"":"none";$("#mt").value=rep?buildReport():buildApplyMsg();
     const n=rep?changed().length:0;$("#mchg").textContent=n?`已改 ${n} 批`:"";$("#mc").textContent=n?`存數量並複製（${n} 批）`:"複製訊息";
     $("#mhint").textContent=rep?`以 ${mdS(sel)} 起算，不含已過期。內容可以先改再複製。`:"列出本週要申請與已逾期未申請的批次。"};
-  const full=()=>{list();fill()};full();
+  const full=()=>{const rep=msgType==="report",cb=document.querySelector('#mca [data-m=""]');if(cb)cb.style.display=rep?"none":"";if(rep&&!msgCat){msgCat="08";document.querySelectorAll("#mca button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.m==="08"))}list();fill()};full();
   const bind=(id,set)=>{$("#"+id).onclick=e=>{const b=e.target.closest("[data-m]");if(!b)return;set(b.dataset.m);document.querySelectorAll(`#${id} button`).forEach(x=>x.setAttribute("aria-pressed",x===b));full()}};
   bind("mty",v=>msgType=v);bind("mst",v=>msgStore=v);bind("mca",v=>msgCat=v);bind("mr",v=>msgRange=+v);
   $("#mdo").onchange=e=>{msgDiscOnly=e.target.checked;full()};
@@ -900,7 +900,7 @@ function msgSheet(force){
       msgDraft={};}
     const ok=await copy(txt);
     if(ch.length)msgSheet(true);
-    toast(ok?(ch.length?`已存 ${ch.length} 批數量，訊息已複製`:"已複製，貼到群組即可"):"已全選，請長按選「複製」");
+    toast(ok?(ch.length?`已存 ${ch.length} 批數量，訊息已複製`:"已複製，貼到群組即可")+(msgType==="report"?`；接著切到「${msgCat==="08"?"巧克力":"香煙"}」複製第二則`:""):"已全選，請長按選「複製」");
     if(!ok){const t=$("#mt");if(t){t.value=txt;t.focus();t.select()}}
   };
 }
@@ -978,7 +978,7 @@ const GUIDE=[
   ["每列按「下架」，或勾選後按「確認下架」","每列的「下架」要按兩次才會下架。下架錯了在下方「最近下架」按兩次復原。",1,"g13"],
   ["（更快）清單上紅色「下架」",`按一下變「確認下架」，再按一次才會下架，防止誤按。`,0,"g14"]]},
  {t:"每日回報（群組訊息）",s:"每天貼到群組的屆期回報",f:[
-  ["按「訊息」，選每日回報和範圍","上到下：每日回報／條碼申請提醒、店別、香煙或巧克力、一～三個月內。",0,"g15"],
+  ["按「訊息」，選每日回報和範圍",`上到下：每日回報／條碼申請提醒、店別、香煙或巧克力、一～三個月內。每日回報 ${K("香煙")}、${K("巧克力")} 分兩則：先選香煙複製貼上，再切巧克力複製貼上。`,0,"g15"],
   ["今天賣掉幾個就按 −",`按 − 只是暫存，訊息先跟著改；要按 ${K("存數量並複製")} 才會真的扣帳上數量（盤點看到的也會變）。沒按就關掉＝不會扣。`,0,"g16"],
   ["按「存數量並複製」，或做成縮圖圖片",`數量寫回系統、訊息已複製，直接貼到群組。按 ${K("🖼 產生含縮圖的圖片")} 會做成有商品照片的長圖，手機可以直接分享到 LINE。做圖不會存數量，有按 − 要先按「存數量並複製」。`,1,"g17"]]},
  {t:"賣出、修改、刪除",s:"平常維護效期資料",f:[
