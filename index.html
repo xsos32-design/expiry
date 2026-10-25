@@ -869,18 +869,19 @@ function msgSheet(force){
   <div id="mopt">${segB("mr",[[1,"一個月內"],[2,"兩個月內"],[3,"三個月內"]],msgRange)}
   <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin-bottom:8px"><input type="checkbox" id="mdo" ${msgDiscOnly?"checked":""} style="width:20px;height:20px">只列有屆期折扣的</label>
   <div class="tier" style="display:flex;justify-content:space-between"><span>今日數量</span><span id="mchg" style="color:var(--faint);font-weight:700"></span></div>
-  <p class="hint" style="margin:0 0 4px">賣掉幾個就按 −，數量會自己扣、訊息跟著改；扣到 0 就不會出現在回報。</p>
+  <p class="whatis"><b>按 − 只是先暫存。</b>要按下面「存數量並複製」才會真的扣帳上數量（盤點看到的數字也會跟著變），並在紀錄留一筆「每日回報扣數」。沒按就關掉＝不會扣。扣到 0 就不會出現在回報。</p>
   <div id="mlist"></div></div>
   <div class="tier">訊息預覽</div>
   <textarea class="msg" id="mt" aria-label="訊息內容（可直接修改）"></textarea>
   <p class="hint" id="mhint"></p>
   <div class="f" id="mbyf" style="margin-top:8px"><p class="byl">操作人：<b class="bylv">${esc(lastBy)||"未選"}</b><small>右上角可換人</small></p></div>
   <button class="go" id="mc">複製訊息</button>
-  <button class="shimg" id="mimg">🖼 產生含縮圖的圖片（可分享到 LINE）</button>`,force,force))return;
-  $("#mimg").onclick=async()=>{const b=$("#mimg");b.disabled=true;b.textContent="圖片產生中…";try{await shareImg(msgType==="report")}catch(e){toast("圖片沒做成功："+(e.message||e))}b.disabled=false;b.textContent="🖼 產生含縮圖的圖片（可分享到 LINE）"};
+  <button class="shimg" id="mimg">🖼 產生含縮圖的圖片（可分享到 LINE）</button>
+  <p class="hint" id="mimgh" style="margin-top:6px">產生圖片不會存數量；有按 − 的話，先按「存數量並複製」再做圖。</p>`,force,force))return;
+  $("#mimg").onclick=async()=>{const pend=msgType==="report"?changed().length:0;const b=$("#mimg");b.disabled=true;b.textContent="圖片產生中…";try{await shareImg(msgType==="report")}catch(e){toast("圖片沒做成功："+(e.message||e))}b.disabled=false;b.textContent="🖼 產生含縮圖的圖片（可分享到 LINE）";if(pend)setTimeout(()=>toast(`提醒：還有 ${pend} 批數量沒存，按「存數量並複製」才會扣帳上數量`),2200)};
   const changed=()=>reportLots().filter(l=>mq(l)!==l.qty);
   const list=()=>{const a=reportLots();$("#mlist").innerHTML=a.length?a.map(l=>{const v=mq(l),d=v-l.qty;return `<div class="mrow"><span class="mn"><b>${l.store||"?"} ${l.cat==="07"?"🍫":"🚬"} ${esc(l.name)}</b><small>${fx(l)}${l.disc?"　⬇"+l.disc:""}　帳上 ${l.qty}${d?`<em class="${d<0?"m":"p"}">${d>0?"+":""}${d}</em>`:""}</small></span><span class="step"><button data-dq="${l.id}" data-v="-1" aria-label="減一">−</button><input data-iq="${l.id}" type="number" inputmode="numeric" min="0" value="${v}" class="${d?"chg":""}" aria-label="今日數量"><button data-dq="${l.id}" data-v="1" aria-label="加一">＋</button></span></div>`}).join(""):`<p class="hint">沒有符合的品項</p>`};
-  const fill=()=>{const rep=msgType==="report";$("#mopt").style.display=rep?"":"none";$("#mbyf").style.display=rep?"":"none";$("#mt").value=rep?buildReport():buildApplyMsg();
+  const fill=()=>{const rep=msgType==="report";$("#mopt").style.display=rep?"":"none";$("#mimgh").style.display=rep?"":"none";$("#mbyf").style.display=rep?"":"none";$("#mt").value=rep?buildReport():buildApplyMsg();
     const n=rep?changed().length:0;$("#mchg").textContent=n?`已改 ${n} 批`:"";$("#mc").textContent=n?`存數量並複製（${n} 批）`:"複製訊息";
     $("#mhint").textContent=rep?`以 ${mdS(sel)} 起算，不含已過期。內容可以先改再複製。`:"列出本週要申請與已逾期未申請的批次。"};
   const full=()=>{list();fill()};full();
@@ -978,8 +979,8 @@ const GUIDE=[
   ["（更快）清單上紅色「下架」",`按一下變「確認下架」，再按一次才會下架，防止誤按。`,0,"g14"]]},
  {t:"每日回報（群組訊息）",s:"每天貼到群組的屆期回報",f:[
   ["按「訊息」，選每日回報和範圍","上到下：每日回報／條碼申請提醒、店別、香煙或巧克力、一～三個月內。",0,"g15"],
-  ["今天賣掉幾個就按 −","數量和訊息一起扣，旁邊紅字顯示扣了幾個；扣到 0 就不會出現在回報。",0,"g16"],
-  ["按「存數量並複製」，或做成縮圖圖片",`數量寫回系統、訊息已複製，直接貼到群組。按 ${K("🖼 產生含縮圖的圖片")} 會做成有商品照片的長圖，手機可以直接分享到 LINE。`,1,"g17"]]},
+  ["今天賣掉幾個就按 −",`按 − 只是暫存，訊息先跟著改；要按 ${K("存數量並複製")} 才會真的扣帳上數量（盤點看到的也會變）。沒按就關掉＝不會扣。`,0,"g16"],
+  ["按「存數量並複製」，或做成縮圖圖片",`數量寫回系統、訊息已複製，直接貼到群組。按 ${K("🖼 產生含縮圖的圖片")} 會做成有商品照片的長圖，手機可以直接分享到 LINE。做圖不會存數量，有按 − 要先按「存數量並複製」。`,1,"g17"]]},
  {t:"賣出、修改、刪除",s:"平常維護效期資料",f:[
   ["賣掉一個：按「−1」",`數量直接扣 1，底部出現提示，6 秒內按 ${K("復原")} 可以撤回。`,0,"g18"],
   ["要修改：點品名，改完按「存修改」",`可以改店別、效期、數量、售價、折扣，香菸還能改品名。效期一樣直接打數字。最下面 ${K("刪除這批","r")} 要管理者登入（⚙），按兩次才刪，刪完也能復原。`,1,"g19"]]},
