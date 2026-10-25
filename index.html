@@ -356,6 +356,17 @@ header{position:sticky;top:0;z-index:10;background:var(--ground);padding-top:8px
 .tb[aria-pressed="true"] small{color:#5a4100}
 .whatis{border:1px solid var(--gold);padding:8px 10px;margin:-2px 0 10px;font-size:12.5px;line-height:1.5;color:var(--ink)}
 .whatis b{color:var(--gold)}
+.tools{grid-template-columns:repeat(4,1fr)!important}
+.hidk{display:none}
+.msum{display:block;width:100%;text-align:left;padding:10px 0;font-size:13px;font-weight:900;color:var(--faint)}
+.msum::before{content:"▸ ";color:var(--gold)}
+.more.open .msum::before{content:"▾ "}
+.more .mbody{display:none}
+.more.open .mbody{display:block}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mgrid button{border:1px solid var(--edge);background:var(--surface);padding:14px 8px;text-align:left;font-weight:900;font-size:15px}
+.mgrid small{display:block;font-size:11.5px;color:var(--faint);font-weight:700;margin-top:3px}
+#mca button{height:50px;font-size:16px;font-weight:900}
 </style>
 </head>
 <body>
@@ -378,12 +389,10 @@ header{position:sticky;top:0;z-index:10;background:var(--ground);padding-top:8px
 
   <div class="tools">
     <button class="tb" id="tAdd" data-k="add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>登錄<small>新增一批</small></button>
-    <button class="tb" id="tApply" data-k="apply"><svg viewBox="0 0 24 24"><path d="M4 6v12M7 6v12M10 6v12M14 6v12M17 6v8M20 6v12"/><path d="m15 18 2 2 4-4"/></svg>條碼<small>申請提醒</small></button>
-    <button class="tb" id="tPull" data-k="pull"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4zM3 4h18v3H3z"/><path d="M10 11h4"/><path d="m9 15 2 2 4-4"/></svg>下架<small>到期下架</small></button>
     <button class="tb" id="tCount" data-k="count"><svg viewBox="0 0 24 24"><path d="M9 4h6v3H9zM7 5H5v16h14V5h-2"/><path d="m9 14 2 2 4-4"/></svg>盤點<small>核對數量</small></button>
-    <button class="tb" id="tMsg" data-k="msg"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>訊息<small>群組回報</small></button>
-    <button class="tb" id="tLog" data-k="log"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>紀錄<small>操作紀錄</small></button>
-    <button class="tb" id="tExp" data-k="exp"><svg viewBox="0 0 24 24"><path d="M12 4v11m-4-4 4 4 4-4M5 20h14"/></svg>匯出<small>備份下載</small></button>
+    <button class="tb" id="tMsg" data-k="msg"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>回報<small>群組回報</small></button>
+    <button class="tb" id="tMore" data-k="more"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>更多<small>條碼・下架・紀錄</small></button>
+    <span class="hidk"><button class="tb" id="tApply" data-k="apply"><svg viewBox="0 0 24 24"><path d="M4 6v12M7 6v12M10 6v12M14 6v12M17 6v8M20 6v12"/><path d="m15 18 2 2 4-4"/></svg>條碼<small>申請提醒</small></button><button class="tb" id="tPull" data-k="pull"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4zM3 4h18v3H3z"/><path d="M10 11h4"/><path d="m9 15 2 2 4-4"/></svg>下架<small>到期下架</small></button><button class="tb" id="tLog" data-k="log"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>紀錄<small>操作紀錄</small></button><button class="tb" id="tExp" data-k="exp"><svg viewBox="0 0 24 24"><path d="M12 4v11m-4-4 4 4 4-4M5 20h14"/></svg>匯出<small>備份下載</small></button></span>
   </div>
   <div class="panel" id="panel"></div>
 
@@ -599,7 +608,7 @@ $("#lbv").onclick=e=>{if(e.target.id==="lbv")unzoom()};
 function openSheet(h){$("#sheet").innerHTML=h;$("#mask").classList.add("on");const x=$("#sheet .x");if(x)x.onclick=closeSheet}
 function closeSheet(){$("#mask").classList.remove("on")}
 let panelKey="";
-function openPanel(k,h,force,noScroll){const p=$("#panel");if(!force&&panelKey===k&&p.classList.contains("on")){closePanel();return false}if(panelKey==="count"&&k!=="count"){counting=false;draft={};render()}panelKey=k;p.innerHTML=h;p.classList.add("on");document.body.classList.add("pon");document.querySelectorAll(".tools .tb").forEach(b=>b.setAttribute("aria-pressed",b.dataset.k===k));const x=p.querySelector(".x");if(x)x.onclick=closePanel;syncTodo();if(!noScroll)jumpTo(p);return true}
+function openPanel(k,h,force,noScroll){const p=$("#panel");if(!force&&panelKey===k&&p.classList.contains("on")){closePanel();return false}if(panelKey==="count"&&k!=="count"){counting=false;draft={};render()}panelKey=k;p.innerHTML=h;p.classList.add("on");document.body.classList.add("pon");document.querySelectorAll(".tools .tb").forEach(b=>b.setAttribute("aria-pressed",b.dataset.k===k||(b.id==="tMore"&&["apply","pull","log","exp","more"].includes(k))));const x=p.querySelector(".x");if(x)x.onclick=closePanel;syncTodo();if(!noScroll)jumpTo(p);return true}
 $("#panel").addEventListener("click",e=>{const b=e.target.closest(".rgo");if(!b)return;e.preventDefault();e.stopPropagation();quick(b)});
 function syncTodo(){const a=$("#goapply"),b=$("#gopull");if(a)a.setAttribute("aria-pressed",panelKey==="apply");if(b)b.setAttribute("aria-pressed",panelKey==="pull");const c=$("#gomsg");if(c)c.setAttribute("aria-pressed",panelKey==="msg")}
 function jumpTo(el){requestAnimationFrame(()=>requestAnimationFrame(()=>{const sm=!matchMedia("(prefers-reduced-motion: reduce)").matches;try{el.scrollIntoView({behavior:sm?"smooth":"auto",block:"start"})}catch(e){el.scrollIntoView(true)}const off=(document.querySelector("header").offsetHeight||0)+8,y=el.getBoundingClientRect().top+window.scrollY-off;setTimeout(()=>{if(Math.abs(el.getBoundingClientRect().top-off)>40)window.scrollTo(0,y)},sm?450:0)}))}
@@ -633,22 +642,22 @@ function parseExp(s,cat){
 
 /* ---------- add ---------- */
 function addSheet(pre){
-  let cat=pre&&pre.cat||"07",picked=pre&&pre.code?CATMAP[pre.code]:null,newImg="";
+  let cat=pre&&pre.cat||(()=>{try{return localStorage.getItem("sa_exp_cat")}catch(e){}})()||"07",picked=pre&&pre.code?CATMAP[pre.code]:null,newImg="";
   if(!openPanel("add",`<h4>登錄效期<button class="x" aria-label="關閉">×</button></h4>
-  <p class="whatis"><b>登錄＝新增一批。</b>清單裡「沒有」的效期才用登錄（進新貨、發現新效期）。已經有的批只是數量不對，請用「盤點」。</p>
+  <p class="whatis"><b>登錄＝新增一批</b>（清單沒有的效期）。只是數量不對 → 用「盤點」。</p>
   <div class="f"><label>店別</label>${storeSeg("ast",pre&&pre.store||lastStore)}</div>
   <div class="f"><label>大類</label><div class="cat2"><button class="c" data-cat="07">07 巧克力</button><button class="s" data-cat="08">08 菸類</button></div></div>
   <div class="f"><label>品名</label><input id="aname" autocomplete="off" placeholder="打品名、品牌或品號"><div class="pick" id="pick"></div><div id="chosen"></div><div class="rec" id="arec"></div></div>
   <div class="f" id="phf" style="display:none"><label>照片（選填，拍一次之後同品名都會用）</label><input id="aph" type="file" accept="image/*" style="padding-top:9px"></div>
   <div class="f2"><div class="f"><label id="aexpl">有效日期</label><div class="ein"><input id="aexpt" inputmode="numeric" autocomplete="off" enterkeyhint="next"><button type="button" class="cal1" id="aexpb" aria-label="用日曆選">📅</button><input id="aexp" type="date" class="hid" tabindex="-1"><input id="aexpm" type="month" class="hid" tabindex="-1"></div><small class="ev" id="aexpv"></small></div><div class="f"><label>數量</label><input id="aqty" type="number" inputmode="numeric" min="1" value="1"></div></div>
-  <div class="f2"><div class="f"><label>售價（選填）</label><input id="aprice" type="number" inputmode="numeric" min="0" placeholder="例：380" value="${pre&&pre.price||""}"></div><div class="f"><label>屆期折扣（選填）</label><select id="adisc">${discOpts(pre&&pre.disc)}</select></div></div>
+  <div class="more"><button type="button" class="msum" onclick="this.parentNode.classList.toggle('open')">選填：售價、屆期折扣</button><div class="mbody"><div class="f2"><div class="f"><label>售價</label><input id="aprice" type="number" inputmode="numeric" min="0" placeholder="例：380" value="${pre&&pre.price||""}"></div><div class="f"><label>屆期折扣</label><select id="adisc">${discOpts(pre&&pre.disc)}</select></div></div></div></div>
   <p class="byl">操作人：<b class="bylv">${esc(lastBy)||"未選"}</b><small>右上角可換人</small></p>
   <div class="hint" id="ahint"></div>
   <div class="go2"><button class="go" id="asave">存入，登下一批</button><button class="ghost" id="adone">存入並關閉</button></div>
   <div class="sess" id="asess"></div>`,!!pre))return;
   let sess=[];
   wireSeg("ast");
-  const setCat=c=>{cat=c;document.querySelectorAll("[data-cat]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.cat===c));
+  const setCat=c=>{cat=c;try{localStorage.setItem("sa_exp_cat",c)}catch(e){}document.querySelectorAll("[data-cat]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.cat===c));
     $("#aexpt").placeholder=c==="07"?"例 261231":"例 2611";$("#aexpl").textContent=c==="07"?"有效日期":"有效年月";
     $("#aname").placeholder=c==="07"?"打品名、品牌或品號":"例：馬爾斯沁黎雙晶球";if(c==="08"){picked=null;$("#chosen").innerHTML=""}$("#phf").style.display=c==="08"||(!picked&&$("#aname").value.trim())?"block":"none";pick();expPrev();recent()};
   const pick=()=>{
@@ -794,7 +803,7 @@ $("#tApply").onclick=()=>applyPanel(false,false);
 
 /* ---------- count / log / export ---------- */
 $("#tAdd").onclick=()=>addSheet();
-$("#tCount").onclick=()=>{if(!openPanel("count",`<h4>盤點<button class="x" aria-label="關閉">×</button></h4><p class="whatis"><b>盤點＝核對數量，不會新增批次。</b>只改清單上「已經有」的批；點到清單沒有的效期，存完再用「登錄」補登。</p><p class="hint" style="margin:-4px 0 10px">上方每一批都多了數量格，輸入實點後回到這裡存檔。有改的格子會變黃。</p><p id="ctext" style="font-weight:900;margin-bottom:10px">尚未修改任何數量</p><p class="byl">操作人：<b class="bylv">${esc(lastBy)||"未選"}</b><small>右上角可換人</small></p><button class="go" id="csave">存盤點</button><button class="ghost" id="ccancel">取消盤點</button>`,false,true))return;counting=true;draft={};mode="all";bucket=null;$("#csave").onclick=saveCount;$("#ccancel").onclick=closePanel;render();jumpTo($("#panel"))};
+$("#tCount").onclick=()=>{if(!openPanel("count",`<h4>盤點<button class="x" aria-label="關閉">×</button></h4><p class="whatis"><b>盤點＝改數量，不新增批次。</b>清單每批多一格，填實點數量後按「存盤點」。</p><p id="ctext" style="font-weight:900;margin-bottom:10px">尚未修改任何數量</p><p class="byl">操作人：<b class="bylv">${esc(lastBy)||"未選"}</b><small>右上角可換人</small></p><button class="go" id="csave">存盤點</button><button class="ghost" id="ccancel">取消盤點</button>`,false,true))return;counting=true;draft={};mode="all";bucket=null;$("#csave").onclick=saveCount;$("#ccancel").onclick=closePanel;render();jumpTo($("#panel"))};
 async function saveCount(){
   const by=lastBy;if(!by)return needWho();remember(by);
   const ch=Object.keys(draft).map(k=>[lots.find(x=>x.id===k),parseInt(draft[k],10)]).filter(([l,v])=>l&&v>=0&&v!==l.qty);
@@ -864,12 +873,13 @@ function msgSheet(force){
   if(!force)msgDraft={};
   if(!openPanel("msg",`<h4>群組訊息<button class="x" aria-label="關閉">×</button></h4>
   ${segB("mty",[["report","每日回報"],["apply","條碼申請提醒"]],msgType)}
-  ${segB("mst",[["","兩店"],["2140","2140"],["2153","2153"]],msgStore)}
-  ${segB("mca",[["","兩類"],["08","香煙"],["07","巧克力"]],msgCat)}
-  <div id="mopt">${segB("mr",[[1,"一個月內"],[2,"兩個月內"],[3,"三個月內"]],msgRange)}
-  <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin-bottom:8px"><input type="checkbox" id="mdo" ${msgDiscOnly?"checked":""} style="width:20px;height:20px">只列有屆期折扣的</label>
+  ${segB("mca",[["","兩類"],["08","🚬 香煙"],["07","🍫 巧克力"]],msgCat)}
+  <div class="more"><button type="button" class="msum" onclick="this.parentNode.classList.toggle('open')">更多選項：店別・範圍・折扣</button><div class="mbody">${segB("mst",[["","兩店"],["2140","2140"],["2153","2153"]],msgStore)}
+  <div id="mopt2">${segB("mr",[[1,"一個月內"],[2,"兩個月內"],[3,"三個月內"]],msgRange)}
+  <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin-bottom:8px"><input type="checkbox" id="mdo" ${msgDiscOnly?"checked":""} style="width:20px;height:20px">只列有屆期折扣的</label></div></div></div>
+  <div id="mopt">
   <div class="tier" style="display:flex;justify-content:space-between"><span>今日數量</span><span id="mchg" style="color:var(--faint);font-weight:700"></span></div>
-  <p class="whatis"><b>按 − 只是先暫存。</b>要按下面「存數量並複製」才會真的扣帳上數量（盤點看到的數字也會跟著變），並在紀錄留一筆「每日回報扣數」。沒按就關掉＝不會扣。扣到 0 就不會出現在回報。</p>
+  <p class="whatis"><b>今天賣掉幾個就按 −</b>，再按最下面金色按鈕才會扣帳。</p>
   <div id="mlist"></div></div>
   <div class="tier">訊息預覽</div>
   <textarea class="msg" id="mt" aria-label="訊息內容（可直接修改）"></textarea>
@@ -877,13 +887,13 @@ function msgSheet(force){
   <div class="f" id="mbyf" style="margin-top:8px"><p class="byl">操作人：<b class="bylv">${esc(lastBy)||"未選"}</b><small>右上角可換人</small></p></div>
   <button class="go" id="mc">複製訊息</button>
   <button class="shimg" id="mimg">🖼 產生含縮圖的圖片（可分享到 LINE）</button>
-  <p class="hint" id="mimgh" style="margin-top:6px">產生圖片不會存數量；有按 − 的話，先按「存數量並複製」再做圖。</p>`,force,force))return;
+  <p class="hint" id="mimgh" style="margin-top:6px"></p>`,force,force))return;
   $("#mimg").onclick=async()=>{const pend=msgType==="report"?changed().length:0;const b=$("#mimg");b.disabled=true;b.textContent="圖片產生中…";try{await shareImg(msgType==="report")}catch(e){toast("圖片沒做成功："+(e.message||e))}b.disabled=false;b.textContent="🖼 產生含縮圖的圖片（可分享到 LINE）";if(pend)setTimeout(()=>toast(`提醒：還有 ${pend} 批數量沒存，按「存數量並複製」才會扣帳上數量`),2200)};
   const changed=()=>reportLots().filter(l=>mq(l)!==l.qty);
   const list=()=>{const a=reportLots();$("#mlist").innerHTML=a.length?a.map(l=>{const v=mq(l),d=v-l.qty;return `<div class="mrow"><span class="mn"><b>${l.store||"?"} ${l.cat==="07"?"🍫":"🚬"} ${esc(l.name)}</b><small>${fx(l)}${l.disc?"　⬇"+l.disc:""}　帳上 ${l.qty}${d?`<em class="${d<0?"m":"p"}">${d>0?"+":""}${d}</em>`:""}</small></span><span class="step"><button data-dq="${l.id}" data-v="-1" aria-label="減一">−</button><input data-iq="${l.id}" type="number" inputmode="numeric" min="0" value="${v}" class="${d?"chg":""}" aria-label="今日數量"><button data-dq="${l.id}" data-v="1" aria-label="加一">＋</button></span></div>`}).join(""):`<p class="hint">沒有符合的品項</p>`};
-  const fill=()=>{const rep=msgType==="report";$("#mopt").style.display=rep?"":"none";$("#mimgh").style.display=rep?"":"none";$("#mbyf").style.display=rep?"":"none";$("#mt").value=rep?buildReport():buildApplyMsg();
-    const n=rep?changed().length:0;$("#mchg").textContent=n?`已改 ${n} 批`:"";$("#mc").textContent=n?`存數量並複製（${n} 批）`:"複製訊息";
-    $("#mhint").textContent=rep?`以 ${mdS(sel)} 起算，不含已過期。內容可以先改再複製。`:"列出本週要申請與已逾期未申請的批次。"};
+  const fill=()=>{const rep=msgType==="report";$("#mopt").style.display=rep?"":"none";$("#mopt2").style.display=rep?"":"none";$("#mimgh").style.display="none";$("#mbyf").style.display=rep?"":"none";$("#mt").value=rep?buildReport():buildApplyMsg();
+    const n=rep?changed().length:0;$("#mchg").textContent=n?`已改 ${n} 批`:"";$("#mc").textContent=rep?`複製${msgCat==="07"?"🍫 巧克力":"🚬 香煙"}回報`+(n?`（並扣 ${n} 批數量）`:""):"複製訊息";
+    $("#mhint").textContent=rep?"內容可以先改再複製。":"列出本週要申請與已逾期未申請的批次。"};
   const full=()=>{const rep=msgType==="report",cb=document.querySelector('#mca [data-m=""]');if(cb)cb.style.display=rep?"none":"";if(rep&&!msgCat){msgCat="08";document.querySelectorAll("#mca button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.m==="08"))}list();fill()};full();
   const bind=(id,set)=>{$("#"+id).onclick=e=>{const b=e.target.closest("[data-m]");if(!b)return;set(b.dataset.m);document.querySelectorAll(`#${id} button`).forEach(x=>x.setAttribute("aria-pressed",x===b));full()}};
   bind("mty",v=>msgType=v);bind("mst",v=>msgStore=v);bind("mca",v=>msgCat=v);bind("mr",v=>msgRange=+v);
@@ -897,14 +907,19 @@ function msgSheet(force){
     const txt=$("#mt").value,ch=msgType==="report"?changed():[];
     if(ch.length){const by=lastBy;if(!by)return needWho();remember(by);const at=Date.now();
       try{for(const l of ch){const v=mq(l);await putLot({...l,qty:v});await putLog({id:uid(),t:"每日回報扣數",lot:l.id,cat:l.cat,name:l.name,exp:l.exp,from:l.qty,to:v,by,at})}}catch(e){return toast("數量沒存成功："+(e.code||e.message))}
-      msgDraft={};}
+      ch.forEach(l=>delete msgDraft[l.id]);}
     const ok=await copy(txt);
-    if(ch.length)msgSheet(true);
-    toast(ok?(ch.length?`已存 ${ch.length} 批數量，訊息已複製`:"已複製，貼到群組即可")+(msgType==="report"?`；接著切到「${msgCat==="08"?"巧克力":"香煙"}」複製第二則`:""):"已全選，請長按選「複製」");
+    const was=msgCat,rep=msgType==="report";
+    if(rep&&ok&&was==="08"){msgCat="07";msgSheet(true)}else if(ch.length)msgSheet(true);
+    toast(ok?(rep?(was==="08"?`已複製香煙回報${ch.length?`，扣了 ${ch.length} 批`:""}。已切到巧克力，貼完再按一次`:`已複製巧克力回報${ch.length?`，扣了 ${ch.length} 批`:""}，貼到群組即可`):"已複製，貼到群組即可"):"已全選，請長按選「複製」");
     if(!ok){const t=$("#mt");if(t){t.value=txt;t.focus();t.select()}}
   };
 }
 $("#tMsg").onclick=()=>msgSheet(false);
+function morePanel(){if(!openPanel("more",`<h4>更多功能<button class="x" aria-label="關閉">×</button></h4>
+  <div class="mgrid"><button data-go="tApply">條碼申請<small>到期前3/2/1個月</small></button><button data-go="tPull">下架<small>到下架日的批次</small></button><button data-go="tLog">紀錄<small>誰做了什麼</small></button><button data-go="tExp">匯出<small>Excel、備份</small></button></div>`))return;
+  $("#panel").querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>document.getElementById(b.dataset.go).click())}
+$("#tMore").onclick=morePanel;
 const loadImg=src=>new Promise(res=>{if(!src)return res(null);const i=new Image();if(!src.startsWith("data:"))i.crossOrigin="anonymous";i.onload=()=>res(i);i.onerror=()=>res(null);i.src=src;setTimeout(()=>res(null),8000)});
 async function shareImg(rep){
   let items;
@@ -955,7 +970,7 @@ const GUIDE=[
  {t:"開始之前",s:"先認識畫面，紅框就是要看、要按的地方",f:[
   ["右上角選「操作人」",`點 ${K("操作人？")} 選你自己，選一次就會記住。名單沒有你，請管理者到 ${K("⚙")} 新增。`,0,"g01"],
   ["看「今日任務」和行事曆",`最上面三格是今天要做的：金＝申請屆期條碼、紅＝該下架、綠＝每日回報，點下去直接處理。行事曆平常收成一週，按 ${K("▼ 展開整月")} 看整個月；小數字＝那天到期的批數。`,0,"g02"],
-  ["下方 7 個功能鍵",`${K("登錄")}${K("條碼")}${K("下架")}${K("盤點")}${K("訊息")}${K("紀錄")}${K("匯出")}，每個鍵下面的小字就是用途；點了會在功能列下方展開。`,0,"g03"],
+  ["下方 4 個功能鍵",`${K("登錄")}${K("盤點")}${K("回報")}${K("更多")}；條碼申請、下架、紀錄、匯出放在「更多」裡。`,0,"g03"],
   ["看清單",`手機上用分頁切換 ${K("07 巧克力")}／${K("08 菸類")}。每批下面有快速鍵：${K("−1","t")} 賣出、${K("條碼✓")} 已申請、${K("下架","r")}。點品名可以修改。`,1,"g12"]]},
  {t:"登錄還是盤點？",s:"先問自己：這個效期，清單裡有沒有？",f:[
   ["清單裡「沒有」這個效期 → 用「登錄」",`登錄＝${K("新增一批")}。進新貨、補貨、在架上發現清單沒有的效期，都用登錄。同一個商品、不同效期要分開登，各算一批。`,0,"g04"],
@@ -966,21 +981,21 @@ const GUIDE=[
   ["選店別、大類",`${K("2140","t")} 或 ${K("2153","r")}；${K("07 巧克力")} 或 ${K("08 菸類")}`,0,"g04"],
   ["打品名，從清單點選",`巧克力打品名、品牌或品號都可以找；香菸自己打品名，可以有空格（注音要等字選好、沒有底線時再按空白）。常登的可以直接點下方「最近登過」。`,0,"g05"],
   ["效期直接打數字",`巧克力打 ${K("271231")} 或包裝上的 ${K("31.12.2027")}；菸打 ${K("2611")}。下面綠字會顯示換算後的日期和剩幾天，確認沒錯再往下。`,0,"g06"],
-  ["打數量，按「存入，登下一批」","數量欄按 Enter 也一樣是存入。照片可以現場拍，也可以從相簿選。",0,"g07"],
+  ["打數量，按「存入，登下一批」","數量欄按 Enter 也一樣。售價、折扣收在「選填」裡；店別、大類會記住上次選的。",0,"g07"],
   ["接著登下一批，全部登完按「存入並關閉」",`店別、效期會保留，下面列出這次登了哪些。同店同品項同效期已經有的，會問你要不要 ${K("合併")}。`,1,"g08"]]},
  {t:"屆期條碼申請",s:"到期前 3、2、1 個月各申請一次，進入前一週要申請好",f:[
-  ["點金色待辦「批要申請屆期條碼」",`或按功能列 ${K("條碼")}。紅底「逾期」＝已經進入該月份還沒申請。`,0,"g09"],
+  ["點金色待辦「批要申請屆期條碼」",`或按 ${K("更多")} → ${K("條碼申請")}。紅底「逾期」＝已經進入該月份還沒申請。`,0,"g09"],
   ["清單分 🍫巧克力、🚬香煙 兩區",`每區再分 3／2／1 個月。每區右邊 ${K("複製申請訊息")} 只複製那一類，貼給負責的人。每列按「已申請」一鍵完成。`,0,"g10"],
   ["批次處理：勾選後按「確認已申請」","記在右上角操作人名下。按錯了底部 6 秒內可「復原」，或在下方「最近已申請」按兩次復原。",1,"g11"],
   ["（更快）清單上直接按「條碼✓」","一批一批處理時用這個，按完 6 秒內底部可以「復原」。",0,"g12"]]},
  {t:"下架",s:"巧克力距效期 40 天下架（GODIVA、神戶風月堂 30 天）",f:[
-  ["點紅色待辦「批該下架」",`或按功能列 ${K("下架")}，可以切「全部品項」手動下架。`,0,"g02"],
+  ["點紅色待辦「批該下架」",`或按 ${K("更多")} → ${K("下架")}，可以切「全部品項」手動下架。`,0,"g02"],
   ["每列按「下架」，或勾選後按「確認下架」","每列的「下架」要按兩次才會下架。下架錯了在下方「最近下架」按兩次復原。",1,"g13"],
   ["（更快）清單上紅色「下架」",`按一下變「確認下架」，再按一次才會下架，防止誤按。`,0,"g14"]]},
  {t:"每日回報（群組訊息）",s:"每天貼到群組的屆期回報",f:[
-  ["按「訊息」，選每日回報和範圍",`上到下：每日回報／條碼申請提醒、店別、香煙或巧克力、一～三個月內。每日回報 ${K("香煙")}、${K("巧克力")} 分兩則：先選香煙複製貼上，再切巧克力複製貼上。`,0,"g15"],
+  ["按「回報」",`預設是 ${K("每日回報")}、${K("🚬 香煙")}。店別、範圍收在「更多選項」，平常不用動。`,0,"g15"],
   ["今天賣掉幾個就按 −",`按 − 只是暫存，訊息先跟著改；要按 ${K("存數量並複製")} 才會真的扣帳上數量（盤點看到的也會變）。沒按就關掉＝不會扣。`,0,"g16"],
-  ["按「存數量並複製」，或做成縮圖圖片",`數量寫回系統、訊息已複製，直接貼到群組。按 ${K("🖼 產生含縮圖的圖片")} 會做成有商品照片的長圖，手機可以直接分享到 LINE。做圖不會存數量，有按 − 要先按「存數量並複製」。`,1,"g17"]]},
+  ["按金色按鈕複製，貼到群組；再按一次是巧克力",`按 ${K("複製🚬香煙回報")} → 貼群組 → 自動切到巧克力 → 再按一次 → 貼群組。按 − 的數量會在這時一起扣。要附商品圖就按 ${K("🖼 產生含縮圖的圖片")}。`,1,"g17"]]},
  {t:"賣出、修改、刪除",s:"平常維護效期資料",f:[
   ["賣掉一個：按「−1」",`數量直接扣 1，底部出現提示，6 秒內按 ${K("復原")} 可以撤回。`,0,"g18"],
   ["要修改：點品名，改完按「存修改」",`可以改店別、效期、數量、售價、折扣，香菸還能改品名。效期一樣直接打數字。最下面 ${K("刪除這批","r")} 要管理者登入（⚙），按兩次才刪，刪完也能復原。`,1,"g19"]]},
